@@ -1,0 +1,3 @@
+DB Enums
+
+- In ENUM('0', '1'), 0 is false, 1 is true
