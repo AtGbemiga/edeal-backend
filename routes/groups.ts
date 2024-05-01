@@ -1,0 +1,21 @@
+import { Router } from "express";
+const router = Router();
+import { addGroup } from "../controllers/groups/addGroup";
+import { getGroupFInfo } from "../controllers/groups/getOneGroup";
+import { joinGroup } from "../controllers/groups/joinGroup";
+import { leaveGroup } from "../controllers/groups/leaveGroup";
+import { addGroupPost } from "../controllers/groups/addPost";
+import { getGroupPosts } from "../controllers/groups/getPosts";
+// import { getGroupComments } from "../controllers/groups/getComments";
+import { getGroupMembers } from "../controllers/groups/getMembers";
+getGroupMembers;
+router.route("/addGroup").post(addGroup);
+router.route("/getGroupFInfo/:group_id").get(getGroupFInfo);
+router.route("/joinGroup/:group_id").get(joinGroup);
+router.route("/leaveGroup/:group_id").get(leaveGroup);
+router.route("/addGroupPost").post(addGroupPost);
+router.route("/getGroupPosts/:group_id").get(getGroupPosts);
+// router.route("/getGroupComments/:group_post_id").get(getGroupComments);
+router.route("/getGroupMembers/:group_id").get(getGroupMembers);
+
+export default router;
