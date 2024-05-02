@@ -7,18 +7,15 @@ export const payment = (req: Request, res: Response): void => {
   const params = JSON.stringify({
     email: req.query.email,
     amount: req.query.amount,
-    callback_url: `https://wealthy-reliably-hare.ngrok-free.app/api/v1/paystack/callbackurl`,
+    callback_url: `https://fav-work.loca.lt/api/v1/paystack/callbackurl`,
     metadata: {
-      cancel_action:
-        "https://wealthy-reliably-hare.ngrok-free.app/api/v1/paystack/cancel",
+      cancel_action: "https://fav-work.loca.lt/api/v1/paystack/cancel",
     },
   });
 
   getCartPrice(req).then((price) => {
-    const frontendPrice = Number(req.query.amount);
-    console.log({ frontendPrice });
+    const frontendPrice = Number(req.query.amount) / 100;
     const backendPrice = Number(price) + 600;
-    console.log({ backendPrice });
 
     if (backendPrice !== frontendPrice) {
       res

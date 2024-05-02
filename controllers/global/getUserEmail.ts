@@ -3,7 +3,7 @@ import getUserIDAndToken from "../users/getUserIdFromToken";
 import pool from "../../db/db";
 import { RowDataPacket } from "mysql2";
 
-export const getUserEmail = async (
+export const getAccOwnerEmail = async (
   req: Request,
   res: Response
 ): Promise<void> => {
