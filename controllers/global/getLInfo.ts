@@ -5,7 +5,7 @@ import pool from "../../db/db";
 import getUserIDAndToken from "../users/getUserIdFromToken";
 
 type reqQueryProps = {
-  identifier: "products" | "similarProducts" | "wishList" | "groups";
+  identifier: "products" | "similarProducts" | "wishList" | "groups" | "orders";
   subIdentifier?: string;
 };
 
@@ -17,6 +17,7 @@ export const getLInfo: express.RequestHandler = (
   const { id: user_id } = getUserIDAndToken(req);
 
   let sql: string = "";
+  const identifierKey = `${identifier}Res`;
 
   if (!user_id) {
     res.status(401).json({ error: "Unauthorized" });
@@ -88,6 +89,17 @@ LEFT JOIN
 GROUP BY 
     q.id;
     `;
+  } else if (identifier === "orders" && !subIdentifier) {
+    params.push(user_id);
+    sql = `
+    SELECT q.id, q1.id AS user_id, q2.id AS product_id, q.fk_user_email, q.reference_id, q.created_at, q.order_status, q1.account_name AS buyer_name, q2.name, q2.price, SUBSTRING_INDEX(GROUP_CONCAT(q3.imgs), ',', 1) AS first_img
+FROM orders q
+LEFT JOIN users q1 ON q.fk_user_email = q1.email
+LEFT JOIN products q2 ON q2.id = q.fk_product_id
+LEFT JOIN product_imgs q3 ON q3.fk_product_id = q.fk_product_id
+GROUP BY q.id
+HAVING q1.id = ?;
+    `;
   }
 
   pool.query<RowDataPacket[]>(sql, params, (err, result) => {
@@ -97,11 +109,10 @@ GROUP BY
       return;
     }
     if (result.length === 0) {
-      res.status(404).json({ error: "Location not found" });
+      res.status(404).json({ error: "Results not found" });
       return;
     }
-    // console.log({ result });
 
-    res.status(200).json({ result });
+    res.status(200).json({ [identifierKey]: result });
   });
 };

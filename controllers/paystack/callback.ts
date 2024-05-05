@@ -13,8 +13,6 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
  * // if payment is not successful
  * send error response
  */
-
-// TODO: Check if the amount paid matches the expected amount, then Add logic to delete item from cart
 interface Products {
   id: number;
   qty: number;
@@ -79,7 +77,6 @@ WHERE q1.email = ?;
                   }
 
                   const user_id = result[0].id;
-                  console.log({ user_id });
 
                   // get all the associated products in the cart table
                   connection.query<RowDataPacket[]>(
@@ -117,7 +114,6 @@ WHERE fk_user_id = ?;
                         size: product.size,
                         fk_product_id: product.fk_product_id,
                       }));
-                      console.log({ products });
 
                       const values = products.map((product) => [
                         email,
@@ -129,7 +125,6 @@ WHERE fk_user_id = ?;
                         referenceID,
                         product.fk_product_id,
                       ]);
-                      console.log({ values });
 
                       // save the verify fn email, referenceID, and payment_status along with the associated products in orders table
 
@@ -139,7 +134,7 @@ WHERE fk_user_id = ?;
   VALUES ?;
                                               `,
                         [values],
-                        (err, result) => {
+                        (err) => {
                           if (err) {
                             console.error(err);
                             connection.rollback(() => {
@@ -150,16 +145,40 @@ WHERE fk_user_id = ?;
                             });
                             return;
                           }
-                          connection.commit((err) => {
-                            if (err) {
-                              console.error(err);
-                              res
-                                .status(500)
-                                .json({ error: "Internal server error" });
-                              return;
+
+                          // delete items from cart based on id
+                          const cart_ids = products.map(
+                            (product) => product.id
+                          );
+
+                          connection.query<ResultSetHeader>(
+                            `
+                              DELETE FROM cart WHERE id IN (?);
+                              `,
+                            [cart_ids],
+                            (err) => {
+                              if (err) {
+                                console.error(err);
+                                connection.rollback(() => {
+                                  console.error(err);
+                                  res
+                                    .status(500)
+                                    .json({ error: "Internal server error" });
+                                });
+                                return;
+                              }
+                              connection.commit((err) => {
+                                if (err) {
+                                  console.error(err);
+                                  res
+                                    .status(500)
+                                    .json({ error: "Internal server error" });
+                                  return;
+                                }
+                                res.status(200).json("redirect...");
+                              });
                             }
-                            res.status(200).json(response.data.status);
-                          });
+                          );
                         }
                       );
                     }

@@ -16,6 +16,7 @@ export const payment = (req: Request, res: Response): void => {
   getCartPrice(req).then((price) => {
     const frontendPrice = Number(req.query.amount) / 100;
     const backendPrice = Number(price) + 600;
+    console.log({ backendPrice, frontendPrice });
 
     if (backendPrice !== frontendPrice) {
       res
