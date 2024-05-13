@@ -10,6 +10,8 @@ export const search: express.RequestHandler = (req: Request, res: Response) => {
     searchValue: string;
   };
 
+  console.log({ identifier, searchValue });
+
   if (!identifier || !searchValue) {
     res.status(400).json({ error: "Missing required fields" });
     return;
@@ -104,6 +106,7 @@ export const search: express.RequestHandler = (req: Request, res: Response) => {
         SELECT q.id, q.account_name, q.img, q.verified, COALESCE(ROUND(AVG(q1.rating), 1), 0) AS avg_rating, q.tag, COUNT(DISTINCT q1.fk_rater_user_id) AS ratings_count
         FROM users q
         LEFT JOIN seller_star_ratings q1 ON q1.fk_seller_user_id = q.id
+        WHERE q.account_type = 'seller'
         GROUP BY q.id
         HAVING q.tag LIKE ?
         ORDER BY RAND();
@@ -123,7 +126,7 @@ export const search: express.RequestHandler = (req: Request, res: Response) => {
           servicesFinalResult.push(result);
 
           pool.execute<RowDataPacket[]>(
-            "SELECT COUNT(*) AS total FROM users WHERE tag LIKE ?;",
+            "SELECT COUNT(*) AS total FROM users WHERE tag LIKE ? AND account_type='sellers';",
             [`%${searchValue}%`],
             (err, result) => {
               if (err) {

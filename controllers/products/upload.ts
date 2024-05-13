@@ -10,8 +10,6 @@ export const uploadProduct: express.RequestHandler = async (
   req: Request,
   res: Response
 ) => {
-  const token = req.headers.authorization?.split(" ")[1];
-
   const { id: user_id } = getUserIDAndToken(req);
 
   if (!user_id) {

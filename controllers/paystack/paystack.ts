@@ -7,10 +7,7 @@ export const payment = (req: Request, res: Response): void => {
   const params = JSON.stringify({
     email: req.query.email,
     amount: req.query.amount,
-    callback_url: `https://fav-work.loca.lt/api/v1/paystack/callbackurl`,
-    metadata: {
-      cancel_action: "https://fav-work.loca.lt/api/v1/paystack/cancel",
-    },
+    callback_url: "https://fav-work.loca.lt/api/v1/paystack/callbackurl",
   });
 
   getCartPrice(req).then((price) => {

@@ -60,7 +60,7 @@ WHERE q1.email = ?;
                 [email],
                 (err, result) => {
                   if (err) {
-                    console.error(err);
+                    console.error("rollback email:", err);
                     connection.rollback(() => {
                       console.error(err);
                       res.status(500).json({ error: "Internal server error" });
@@ -70,7 +70,7 @@ WHERE q1.email = ?;
 
                   if (result.length === 0) {
                     connection.rollback(() => {
-                      console.error(err);
+                      console.error("rollback email length:", err);
                       res.status(404).json({ error: "No data available" });
                     });
                     return;
@@ -90,7 +90,7 @@ WHERE fk_user_id = ?;
                       if (err) {
                         console.error(err);
                         connection.rollback(() => {
-                          console.error(err);
+                          console.error("rollback user:", err);
                           res
                             .status(500)
                             .json({ error: "Internal server error" });
@@ -100,7 +100,7 @@ WHERE fk_user_id = ?;
 
                       if (result.length === 0) {
                         connection.rollback(() => {
-                          console.error(err);
+                          console.error("rollback user length:", err);
                           res.status(404).json({ error: "No data available" });
                         });
                         return;
@@ -136,9 +136,9 @@ WHERE fk_user_id = ?;
                         [values],
                         (err) => {
                           if (err) {
-                            console.error(err);
+                            console.error("rollback values:", err);
                             connection.rollback(() => {
-                              console.error(err);
+                              console.error("rollback values:", err);
                               res
                                 .status(500)
                                 .json({ error: "Internal server error" });
@@ -156,11 +156,11 @@ WHERE fk_user_id = ?;
                               DELETE FROM cart WHERE id IN (?);
                               `,
                             [cart_ids],
-                            (err) => {
+                            (err, result) => {
                               if (err) {
-                                console.error(err);
+                                console.error("rollback cartid:", err);
                                 connection.rollback(() => {
-                                  console.error(err);
+                                  console.error("rollback cartid:", err);
                                   res
                                     .status(500)
                                     .json({ error: "Internal server error" });
@@ -169,13 +169,15 @@ WHERE fk_user_id = ?;
                               }
                               connection.commit((err) => {
                                 if (err) {
-                                  console.error(err);
+                                  console.error("rollback commit:", err);
                                   res
                                     .status(500)
                                     .json({ error: "Internal server error" });
                                   return;
                                 }
-                                res.status(200).json("redirect...");
+                                res.status(200).json({
+                                  result,
+                                });
                               });
                             }
                           );

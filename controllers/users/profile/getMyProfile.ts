@@ -16,7 +16,7 @@ export const getMyProfile: express.RequestHandler = (
   try {
     pool.execute<RowDataPacket[]>(
       `
-        SELECT id, img, account_name, phone_number, account_type, email
+        SELECT id, img, account_name, phone_number, account_type, email, address, tag
 FROM users
 WHERE id = ?;
                 `,
@@ -30,6 +30,7 @@ WHERE id = ?;
           res.status(404).json({ error: "No results found" });
           return;
         }
+
         res.status(200).json({ result });
       }
     );
