@@ -20,7 +20,10 @@ export const getDeal: express.RequestHandler = (
   try {
     pool.execute<RowDataPacket[]>(
       `
-      SELECT id, need, price, tag FROM market ORDER BY id DESC LIMIT 10 OFFSET 0
+      SELECT q.id, q.need, q.price, q.tag, q1.id AS user_id 
+ FROM market q
+ INNER JOIN users q1 ON q.fk_user_id = q1.id
+ ORDER BY q.id DESC LIMIT 10 OFFSET 0;
             `,
       (err, result) => {
         if (err) {

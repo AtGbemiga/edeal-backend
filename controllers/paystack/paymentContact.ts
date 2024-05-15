@@ -14,11 +14,13 @@ import getUserIDAndToken from "../users/getUserIdFromToken";
 
 // TODO: handle no user_id && no recipient_id && amount && email
 export const paymentContact = (req: Request, res: Response): void => {
+  const { id: user_id } = getUserIDAndToken(req);
   const params = JSON.stringify({
-    email: req.query.email || "nYkz9@example.com",
+    email: req.query.email,
     amount: process.env.PAYMENT_CONTACT_PRICE,
-    callback_url: "https://fav-work.loca.lt/api/v1/paystack/callbackurlggg", // wrong
-    metaData: {
+    callback_url: "https://fav-work.loca.lt/api/v1/paystack/callbackurlcontact", // wrong
+    metadata: {
+      senderID: user_id,
       recipientID: req.query.recipientID,
     },
   });
@@ -26,8 +28,6 @@ export const paymentContact = (req: Request, res: Response): void => {
   console.log(process.env.PAYMENT_CONTACT_PRICE);
 
   console.log(req.query.recipientID);
-
-  const { id: user_id } = getUserIDAndToken(req);
 
   try {
     pool.execute<RowDataPacket[]>(
@@ -72,6 +72,7 @@ WHERE fk_sender_id = ? AND fk_recipient_id = ?
 
           reqpaystack.write(params);
           reqpaystack.end();
+          return;
         } else {
           res.status(200).json({ message: "success" });
         }

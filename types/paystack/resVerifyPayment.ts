@@ -45,6 +45,12 @@ export interface Customer {
   international_format_phone: null;
 }
 
+// added. Check for typeof data.metadata incase of err
+export interface Metadata {
+  senderID: string;
+  recipientID: string;
+}
+
 export interface Data {
   id: number;
   domain: string;
@@ -58,7 +64,7 @@ export interface Data {
   channel: string;
   currency: string;
   ip_address: string;
-  metadata: string;
+  metadata: string | Metadata;
   log: Log;
   fees: number;
   fees_split: null;
