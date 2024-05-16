@@ -8,6 +8,7 @@ import { getMyProfile } from "../controllers/users/profile/getMyProfile";
 import { updateProfile } from "../controllers/users/profile/update";
 import { logout } from "../controllers/users/logout";
 import { changePassword } from "../controllers/users/changePassword";
+import { getUserId } from "../websocket/getUserId";
 
 router.route("/").post(createUser);
 router.route("/login").post(login);
@@ -16,5 +17,6 @@ router.route("/myProfile").get(getMyProfile);
 router.route("/updateProfile").patch(updateProfile);
 router.get("/logout", logout);
 router.post("/change-password", changePassword);
+router.route("/getUserId").get(getUserId);
 
 export default router;
