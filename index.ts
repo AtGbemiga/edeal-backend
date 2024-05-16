@@ -19,10 +19,11 @@ import globalRouter from "./routes/global";
 import groupRouter from "./routes/groups";
 import payStackRouter from "./routes/paystack";
 import edealsRouter from "./routes/edeals";
-// import pool from "./db/db";
-// import getUserIDAndToken from "./controllers/users/getUserIdFromToken";
+import chatRouter from "./routes/chat";
+import pool from "./db/db";
 
-// get user_id for websocket
+// Create a map to store user IDs and their WebSocket connections
+const userConnections = new Map<number, WebSocket>();
 
 // Attach WebSocket server to the HTTP server
 const wss = new WebSocket.Server({ server });
@@ -39,27 +40,55 @@ wss.on("connection", function connection(ws: WebSocket) {
     console.log({ rid: data.recipientId });
     console.log({ userId });
 
+    // Associate the user ID with this WebSocket connection
+    userConnections.set(userId, ws);
+
     // Save message to database and send to recipient
-    // saveMessageToDatabase(userId, data.recipientId, data.message);
+    saveMessageToDatabase(userId, data.recipientId, data.message);
     sendMessageToRecipient(userId, data.recipientId, data.message);
+  });
+
+  // Remove the connection from the map when it is closed
+  ws.on("close", () => {
+    userConnections.forEach((value, key) => {
+      if (value === ws) {
+        userConnections.delete(key);
+      }
+    });
   });
 });
 
 // Function to save the message to the database
-// function saveMessageToDatabase(
+function saveMessageToDatabase(
+  senderId: number,
+  recipientId: number,
+  message: string
+) {
+  const query =
+    "INSERT INTO chat (fk_sender_id, recipient_id, message) VALUES (?, ?, ?)";
+  pool.execute(query, [senderId, recipientId, message], function (error) {
+    if (error) throw error;
+    console.log("Message saved to database");
+  });
+}
+
+// Function to send the message to the recipient
+// function sendMessageToRecipient(
 //   senderId: number,
 //   recipientId: number,
 //   message: string
 // ) {
-//   const query =
-//     "INSERT INTO chat (fk_sender_id, fk_recipient_id, message) VALUES (?, ?, ?)";
-//   pool.execute(query, [senderId, recipientId, message], function (error) {
-//     if (error) throw error;
-//     console.log("Message saved to database");
-//   });
+//   console.log({ send: { senderId, recipientId, message } });
+
+//   // Find the WebSocket connection of the recipient
+//   const recipientWs = userConnections.get(recipientId);
+//   if (recipientWs) {
+//     recipientWs.send(JSON.stringify({ senderId, recipientId, message }));
+//   } else {
+//     console.log(`Recipient with ID ${recipientId} is not connected`);
+//   }
 // }
 
-// Function to send the message to the recipient
 function sendMessageToRecipient(
   senderId: number,
   recipientId: number,
@@ -67,13 +96,25 @@ function sendMessageToRecipient(
 ) {
   console.log({ send: { senderId, recipientId, message } });
 
-  // Find the WebSocket connection of the recipient
-  wss.clients.forEach(function outgoing(client: WebSocket) {
-    // Check if the client is the recipient and send the message
-    if (recipientId) {
-      client.send(JSON.stringify({ senderId, recipientId, message }));
-    }
-  });
+  const recipientWs = userConnections.get(recipientId);
+  const senderWs = userConnections.get(senderId);
+
+  if (recipientWs) {
+    recipientWs.send(JSON.stringify({ senderId, recipientId, message }));
+  } else {
+    console.log(`Recipient with ID ${recipientId} is not connected`);
+  }
+
+  if (senderWs) {
+    senderWs.send(
+      JSON.stringify({
+        senderId,
+        recipientId,
+        message,
+        status: recipientWs ? "delivered" : "saved",
+      })
+    );
+  }
 }
 
 app.get("/", (req: Request, res: Response) => {
@@ -86,6 +127,7 @@ app.use("/api/v1/global", globalRouter);
 app.use("/api/v1/groups", groupRouter);
 app.use("/api/v1/paystack", payStackRouter);
 app.use("/api/v1/edeals", edealsRouter);
+app.use("/api/v1/chat", chatRouter);
 
 server.listen(process.env.PORT, () => {
   console.log(`Server started on port ${process.env.PORT}...`);
