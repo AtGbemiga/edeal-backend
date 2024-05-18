@@ -17,13 +17,23 @@ export const paymentContact = (req: Request, res: Response): void => {
   const { id: user_id } = getUserIDAndToken(req);
   const params = JSON.stringify({
     email: req.query.email,
-    amount: process.env.PAYMENT_CONTACT_PRICE,
+    amount: req.query.amount,
     callback_url: "https://fav-work.loca.lt/api/v1/paystack/callbackurlcontact", // wrong
     metadata: {
       senderID: user_id,
       recipientID: req.query.recipientID,
     },
   });
+
+  const newAmount = Number(req.query.amount) / 100;
+  console.log({ newAmount });
+
+  if (newAmount !== Number(process.env.PAYMENT_CONTACT_PRICE)) {
+    res
+      .status(400)
+      .json({ error: "Cart price does not match with the database" });
+    return;
+  }
 
   console.log(process.env.PAYMENT_CONTACT_PRICE);
 

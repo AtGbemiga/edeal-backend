@@ -118,6 +118,6 @@ export const createUser: express.RequestHandler = async (
     // send nodemailer
     // nodemailerFn(msg, email, "Welcome to Evenue", msg);
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

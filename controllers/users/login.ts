@@ -10,18 +10,14 @@ export const login: express.RequestHandler = (req: Request, res: Response) => {
   const {
     account_name,
     password,
-    businessName,
     account_type,
   }: {
     account_name?: string;
     password: string;
-    businessName?: string;
     account_type: string;
   } = req.body;
 
   if (!account_name || !password || !account_type) {
-    console.error("Missing required fields");
-
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
@@ -81,6 +77,6 @@ export const login: express.RequestHandler = (req: Request, res: Response) => {
       }
     );
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
