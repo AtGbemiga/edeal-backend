@@ -5,7 +5,13 @@ import pool from "../../db/db";
 import getUserIDAndToken from "../users/getUserIdFromToken";
 
 type reqQueryProps = {
-  identifier: "products" | "similarProducts" | "wishList" | "groups" | "orders";
+  identifier:
+    | "products"
+    | "similarProducts"
+    | "wishList"
+    | "groups"
+    | "orders"
+    | "news";
   subIdentifier?: string;
 };
 
@@ -92,13 +98,24 @@ GROUP BY
   } else if (identifier === "orders" && !subIdentifier) {
     params.push(user_id);
     sql = `
-    SELECT q.id, q1.id AS user_id, q2.id AS product_id, q.fk_user_email, q.reference_id, q.created_at, q.order_status, q1.account_name AS buyer_name, q2.name, q2.price, SUBSTRING_INDEX(GROUP_CONCAT(q3.imgs), ',', 1) AS first_img
+    SELECT q.id, q1.id AS user_id, q2.id AS product_id, q.fk_user_email, q.reference_id, q.created_at, q.order_status, q1.account_name AS buyer_name, q2.name, q2.price, SUBSTRING_INDEX(GROUP_CONCAT(q3.imgs), ',', 1) AS first_img,
+    CASE WHEN EXISTS(
+      SELECT 1 FROM product_star_ratings q3
+      WHERE q3.fk_user_id = q1.id
+      AND q3.fk_product_id = product_id
+  ) THEN 1 ELSE 0 END AS user_has_rated
 FROM orders q
 LEFT JOIN users q1 ON q.fk_user_email = q1.email
 LEFT JOIN products q2 ON q2.id = q.fk_product_id
 LEFT JOIN product_imgs q3 ON q3.fk_product_id = q.fk_product_id
 GROUP BY q.id
 HAVING q1.id = ?;
+    `;
+  } else if (identifier === "news" && !subIdentifier) {
+    sql = `
+    SELECT id, img, title 
+            FROM news
+            ORDER BY id DESC;
     `;
   }
 

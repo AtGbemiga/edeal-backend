@@ -2,11 +2,15 @@ import express, { Request, Response } from "express";
 import { ResultSetHeader } from "mysql2";
 import pool from "../../db/db";
 import getUserIDAndToken from "../users/getUserIdFromToken";
+
+type ReqParams = {
+  product_id: number;
+};
 export const addRatingAndReview: express.RequestHandler = (
   req: Request,
   res: Response
 ) => {
-  const { product_id } = req.params;
+  const { product_id } = req.params as unknown as ReqParams;
   const { rating, review }: { rating: string; review: string } = req.body;
   const { id: user_id } = getUserIDAndToken(req);
 
@@ -18,7 +22,7 @@ export const addRatingAndReview: express.RequestHandler = (
     pool.execute<ResultSetHeader[]>(
       "INSERT INTO product_star_ratings (rating, fk_user_id, fk_product_id) VALUES (?, ?, ?)",
       [rating, user_id, product_id],
-      (err, result) => {
+      (err) => {
         if (err) {
           console.error("Error adding rating and review:", err);
           res.status(500).json({ error: "Internal server error" });
@@ -48,7 +52,7 @@ export const addRatingAndReview: express.RequestHandler = (
                       INSERT INTO product_star_ratings (rating, fk_user_id, fk_product_id) VALUES (?, ?, ?);
                       `,
                 [rating, user_id, product_id],
-                (err, result, fields) => {
+                (err, result) => {
                   if (err) {
                     // Handle event insert error
                     console.error(err);

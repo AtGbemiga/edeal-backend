@@ -19,6 +19,7 @@ import groupRouter from "./routes/groups";
 import payStackRouter from "./routes/paystack";
 import edealsRouter from "./routes/edeals";
 import chatRouter from "./routes/chat";
+import newsRouter from "./routes/news";
 import { setupWebSocketServer } from "./websocket/websocketServer";
 
 setupWebSocketServer(server);
@@ -34,6 +35,7 @@ app.use("/api/v1/groups", groupRouter);
 app.use("/api/v1/paystack", payStackRouter);
 app.use("/api/v1/edeals", edealsRouter);
 app.use("/api/v1/chat", chatRouter);
+app.use("/api/v1/news", newsRouter);
 
 server.listen(process.env.PORT, () => {
   console.log(`Server started on port ${process.env.PORT}...`);
