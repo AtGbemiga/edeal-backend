@@ -7,6 +7,8 @@ import getUserIDAndToken from "../users/getUserIdFromToken";
 type ReqBody = {
   need: string;
   price: string;
+  lg: string;
+  state: string;
   tag:
     | "User"
     | "MakeupArtist"
@@ -31,7 +33,12 @@ export const addDeal: express.RequestHandler = (
     return;
   }
 
-  const { need, price, tag }: ReqBody = req.body;
+  const { need, price, tag, lg, state }: ReqBody = req.body;
+
+  if (!need || !price || !tag || !lg || !state) {
+    res.status(400).json({ error: "Missing required fields" });
+    return;
+  }
 
   try {
     pool.execute<ResultSetHeader>(
@@ -40,14 +47,18 @@ export const addDeal: express.RequestHandler = (
 (need,
 price,
 tag,
-fk_user_id)
+fk_user_id,
+lg,
+state)
 VALUES
 (?,
 ?,
 ?,
+?,
+?,
 ?);
             `,
-      [need, price, tag, user_id],
+      [need, price, tag, user_id, lg, state],
       (err) => {
         if (err) {
           console.error("Error invalidating token:", err);
