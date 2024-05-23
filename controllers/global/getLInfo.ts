@@ -11,7 +11,8 @@ type reqQueryProps = {
     | "wishList"
     | "groups"
     | "orders"
-    | "news";
+    | "news"
+    | "shortVideos";
   subIdentifier?: string;
 };
 
@@ -116,6 +117,12 @@ HAVING q1.id = ?;
     SELECT id, img, title 
             FROM news
             ORDER BY id DESC;
+    `;
+  } else if (identifier === "shortVideos" && !subIdentifier) {
+    sql = `
+    SELECT sv.id, sv.video, COALESCE(sv.views, 0) AS views, COALESCE(svl.like_count, 0) AS likes
+FROM short_videos sv
+LEFT JOIN short_videos_likes svl ON sv.id = svl.fk_video_id;
     `;
   }
 
