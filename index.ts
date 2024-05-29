@@ -20,12 +20,17 @@ import payStackRouter from "./routes/paystack";
 import edealsRouter from "./routes/edeals";
 import chatRouter from "./routes/chat";
 import newsRouter from "./routes/news";
+import shortVideosRouter from "./routes/shortVideos";
 import { setupWebSocketServer } from "./websocket/websocketServer";
 
 setupWebSocketServer(server);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("E-Deals API is running...");
+});
+
+app.get("/success", (req: Request, res: Response) => {
+  res.send("Payment successful");
 });
 
 app.use("/api/v1/users", userRouter);
@@ -36,6 +41,7 @@ app.use("/api/v1/paystack", payStackRouter);
 app.use("/api/v1/edeals", edealsRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/news", newsRouter);
+app.use("/api/v1/shortVideos", shortVideosRouter);
 
 server.listen(process.env.PORT, () => {
   console.log(`Server started on port ${process.env.PORT}...`);

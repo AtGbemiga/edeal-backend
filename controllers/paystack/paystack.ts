@@ -7,11 +7,14 @@ export const payment = (req: Request, res: Response): void => {
   const params = JSON.stringify({
     email: req.query.email,
     amount: req.query.amount,
-    callback_url: "https://fav-work.loca.lt/api/v1/paystack/callbackurl",
+    callback_url:
+      "https://eager-hardly-gator.ngrok-free.app/api/v1/paystack/callbackurl",
   });
 
   getCartPrice(req).then((price) => {
     const frontendPrice = Number(req.query.amount) / 100;
+    console.log({ frontendPrice });
+
     const backendPrice = Number(price) + 600;
     console.log({ backendPrice, frontendPrice });
 

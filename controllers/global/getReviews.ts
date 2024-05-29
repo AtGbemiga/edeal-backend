@@ -88,6 +88,8 @@ WHERE q.fk_seller_user_id = ?;
           (err, result) => {
             if (err) {
               console.error(err);
+              res.status(500).json({ error: "Internal server error" });
+              return;
             }
             if (result.length === 0) {
               res.status(404).json({ error: "No reviews yet" });

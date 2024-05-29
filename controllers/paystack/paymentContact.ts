@@ -18,7 +18,8 @@ export const paymentContact = (req: Request, res: Response): void => {
   const params = JSON.stringify({
     email: req.query.email,
     amount: req.query.amount,
-    callback_url: "https://fav-work.loca.lt/api/v1/paystack/callbackurlcontact", // wrong
+    callback_url:
+      "https://eager-hardly-gator.ngrok-free.app/api/v1/paystack/callbackurlcontact",
     metadata: {
       senderID: user_id,
       recipientID: req.query.recipientID,
