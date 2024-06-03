@@ -5,10 +5,13 @@ import pool from "../../db/db";
 type IdentifierType = "products" | "groups" | "services";
 
 export const search: express.RequestHandler = (req: Request, res: Response) => {
-  const { identifier, searchValue } = req.query as {
-    identifier: IdentifierType;
-    searchValue: string;
-  };
+  const { identifier, searchValue, lgIdentifier, stateIdentifier } =
+    req.query as {
+      identifier: IdentifierType;
+      searchValue: string;
+      lgIdentifier?: string;
+      stateIdentifier?: string;
+    };
 
   console.log({ identifier, searchValue });
 
@@ -18,7 +21,12 @@ export const search: express.RequestHandler = (req: Request, res: Response) => {
   }
 
   try {
-    if (identifier === "products" && searchValue) {
+    if (
+      identifier === "products" &&
+      searchValue &&
+      !lgIdentifier &&
+      !stateIdentifier
+    ) {
       pool.execute<RowDataPacket[]>(
         `
         SELECT q.id, q.name, SUBSTRING_INDEX(GROUP_CONCAT(q1.imgs), ',', 1) AS first_img, COALESCE(ROUND(AVG(q2.rating), 1), 0) AS rating, COUNT(DISTINCT q2.fk_user_id) AS ratings_count, q3.id AS store_id, q3.img, q3.account_name, q3.verified, 'searchRes' 
@@ -43,7 +51,49 @@ export const search: express.RequestHandler = (req: Request, res: Response) => {
           res.status(200).json({ productSearchData: result });
         }
       );
-    } else if (identifier === "groups" && searchValue) {
+    } else if (
+      identifier === "products" &&
+      searchValue &&
+      lgIdentifier &&
+      stateIdentifier
+    ) {
+      pool.execute<RowDataPacket[]>(
+        `
+        SELECT q.id, q.name, 
+       SUBSTRING_INDEX(GROUP_CONCAT(q1.imgs), ',', 1) AS first_img, 
+       COALESCE(ROUND(AVG(q2.rating), 1), 0) AS rating, 
+       COUNT(DISTINCT q2.fk_user_id) AS ratings_count, 
+       q3.id AS store_id, q3.img, q3.account_name, q3.verified, 'searchRes' 
+FROM products q
+LEFT JOIN product_imgs q1 
+  ON q1.fk_product_id = q.id
+LEFT JOIN product_star_ratings q2
+  ON q2.fk_product_id = q.id
+LEFT JOIN users q3 
+  ON q.fk_user_id = q3.id
+WHERE q.name LIKE ? 
+  AND q3.lg = ? 
+  AND q3.state = ?
+GROUP BY q.id, q.name, q.sub_heading, q.description, q.category, q.price, q.stock_no, q.status, q.created_at;
+        `,
+        [`%${searchValue}%`, lgIdentifier, stateIdentifier],
+        (err, result) => {
+          if (err) {
+            res.status(500).json({ error: "Internal server error" });
+            return;
+          } else if (result.length === 0) {
+            res.status(404).json({ error: "No results found" });
+            return;
+          }
+          res.status(200).json({ productSearchData: result });
+        }
+      );
+    } else if (
+      identifier === "groups" &&
+      searchValue &&
+      !lgIdentifier &&
+      !stateIdentifier
+    ) {
       const finalResult: RowDataPacket[][] = [];
 
       pool.execute<RowDataPacket[]>(
@@ -61,7 +111,7 @@ export const search: express.RequestHandler = (req: Request, res: Response) => {
       LEFT JOIN 
           egroup_members q1 ON q1.fk_group_id = q.id
       LEFT JOIN 
-          egroup_posts q2 ON q2.fk_group_id = q.id
+          egroup_posts q2 ON q2.fk_egroup_id = q.id
       WHERE q.name LIKE ?
       GROUP BY 
           q.id;
@@ -98,7 +148,12 @@ export const search: express.RequestHandler = (req: Request, res: Response) => {
           );
         }
       );
-    } else if (identifier === "services" && searchValue) {
+    } else if (
+      identifier === "services" &&
+      searchValue &&
+      !lgIdentifier &&
+      !stateIdentifier
+    ) {
       const servicesFinalResult: RowDataPacket[][] = [];
 
       pool.execute<RowDataPacket[]>(

@@ -30,12 +30,16 @@ export const updateProfile: express.RequestHandler = (
       account_name,
       email,
       tag,
+      lg: city,
+      state,
     }: {
       address: string;
       phone_number: string;
       account_name: string;
       email: string;
       tag: string;
+      lg: string;
+      state: string;
     } = req.body;
 
     // create uniqueIdentifier for the image
@@ -45,7 +49,7 @@ export const updateProfile: express.RequestHandler = (
     const publicId = `profile-img-${uniqueIdentifier}`;
 
     if (!req.file) {
-      res.status(400).json({ error: "No file uploaded" }); 
+      res.status(400).json({ error: "No file uploaded" });
       return;
     }
 
@@ -63,10 +67,20 @@ export const updateProfile: express.RequestHandler = (
       pool.execute<ResultSetHeader>(
         `
                 UPDATE users
-                SET img = ?, address = ?, phone_number = ?, account_name = ?, email = ?, tag = ?
+                SET img = ?, address = ?, phone_number = ?, account_name = ?, email = ?, tag = ?, lg = ?, state = ?
                 WHERE id = ?
                 `,
-        [imgURL, address, phone_number, account_name, email, tag, user_id],
+        [
+          imgURL,
+          address,
+          phone_number,
+          account_name,
+          email,
+          tag,
+          city,
+          state,
+          user_id,
+        ],
         (err) => {
           if (err) {
             console.error(err);

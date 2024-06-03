@@ -32,10 +32,10 @@ export const getLInfo: express.RequestHandler = (
   }
 
   if (!identifier) {
-    res.status(400).json({ error: "Missing identifier fields" });
+    res.status(400).json({ error: "Missing identifier fields" }); 
     return;
   }
-
+ 
   // TODO: Change type from any
   const params: unknown[] = [];
 
@@ -92,7 +92,7 @@ FROM
 LEFT JOIN 
     egroup_members q1 ON q1.fk_group_id = q.id
 LEFT JOIN 
-    egroup_posts q2 ON q2.fk_group_id = q.id
+    egroup_posts q2 ON q2.fk_egroup_id = q.id
 GROUP BY 
     q.id;
     `;
